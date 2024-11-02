@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <!-- FlatpickrのCSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+  <form id="operationForm">
+    <label for="employeeSelect">従業員:</label>
+    <select id="employeeSelect" name="employeeId"></select><br><br>
+
+    <label for="datePicker">日付選択:</label>
+    <input type="text" id="datePicker" name="dates"><br><br>
+
+    <label for="operationStatus">稼働ステータス:</label>
+    <select id="operationStatus" name="operationStatus">
+      <option value="稼働可">稼働可</option>
+      <option value="稼働不可">稼働不可</option>
+    </select><br><br>
+
+    <input type="button" value="登録" onclick="submitForm()">
+    <input type="button" value="キャンセル" onclick="google.script.host.close()">
+  </form>
+
+  <!-- FlatpickrのJS -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    function loadEmployeeList() {
+      google.script.run.withSuccessHandler(function(employees) {
+        var select = document.getElementById('employeeSelect');
+        employees.forEach(function(emp) {
+          var option = document.createElement('option');
+          option.value = emp.id;
+          option.text = emp.name;
+          select.appendChild(option);
+        });
+      }).getEmployeeList();
+    }
+
+    function submitForm() {
+      var employeeId = document.getElementById('employeeSelect').value;
+      var selectedDates = document.getElementById('datePicker').value;
+      var operationStatus = document.getElementById('operationStatus').value;
+
+      if (!employeeId || !selectedDates || !operationStatus) {
+        alert('すべての必須フィールドを入力してください。');
+        return;
+      }
+
+      var dates = selectedDates.split(',').map(function(dateStr) {
+        return dateStr.trim();
+      });
+
+      var data = {
+        employeeId: employeeId,
+        operationStatus: operationStatus,
+        dates: dates
+      };
+
+      google.script.run.withSuccessHandler(function(response) {
+        if (response.success) {
+          if (response.skippedDates.length > 0) {
+            alert('登録完了。一部の日付は既に登録されています: ' + response.skippedDates.join(', '));
+          } else {
+            alert('登録が完了しました。');
+          }
+          google.script.host.close();
+        } else {
+          alert('登録に失敗しました。');
+        }
+      }).registerOperation(data);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadEmployeeList();
+
+      // Flatpickrの初期化
+      flatpickr("#datePicker", {
+        mode: "multiple",
+        dateFormat: "Y-m-d",
+        locale: "ja"
+      });
+    });
+  </script>
+</body>
+</html>
