@@ -1,4 +1,4 @@
-function generateDeliverySchedule() {
+const generateDeliverySchedule = () => {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const masterSheet = ss.getSheetByName('案件マスター'); // シート名を修正
   const scheduleSheet = ss.getSheetByName('次回配送予定スケジュール');
@@ -50,18 +50,24 @@ function generateDeliverySchedule() {
       const companyName = row[3];
       const mealCount = row[10];
       const deliveryDay = row[11];
-      const firstDeliveryDate = row[12];
-      const trialDeliveryDate = row[13];
-      const deliveryGroup = row[14];
-      const deliveryPriority = row[15];
-      const deliveryTime = row[16];
-      const pickupTime = row[17];
-      const deliveryNotes = row[18];
-      const pickupNotes = row[19];
+      const firstDeliveryDate = row[14];
+      const trialDeliveryDate = row[15];
+      const deliveryGroup = row[16];
+      const deliveryPriority = row[17];
+      const deliveryTime = row[18];
+      const pickupTime = row[19];
+      const deliveryNotes = row[20];
+      const pickupNotes = row[21];
 
       // 備品情報のインデックス
-      const equipmentStartCol = 23; // のぼり旗から始まる列
-      const equipmentData = row.slice(equipmentStartCol, equipmentStartCol + 13);
+      const equipmentStartCol = 24; // のぼり旗から始まる列
+      const equipmentData = row.slice(equipmentStartCol, equipmentStartCol + 12);
+
+      console.log(equipmentData);
+      // 配送備品情報のインデックス
+      const deliveryEquipmentStartCol = 37; // 配送備品から始まる列
+      const deliveryEquipmentData = row.slice(deliveryEquipmentStartCol, deliveryEquipmentStartCol + 9);
+      console.log(deliveryEquipmentData);
 
       if (contractStatus === '試食会' && trialDeliveryDate) {
         // 試食会の場合は1回のみのスケジュール
@@ -79,7 +85,8 @@ function generateDeliverySchedule() {
             pickupTime,
             deliveryNotes,
             pickupNotes,
-            equipmentData
+            equipmentData,
+            deliveryEquipmentData,
           ));
         }
       }
@@ -98,6 +105,7 @@ function generateDeliverySchedule() {
           deliveryNotes,
           pickupNotes,
           equipmentData,
+          deliveryEquipmentData,
           nextScheduleId + newSchedules.length,
           existingDeliveries
         );
@@ -121,7 +129,7 @@ function generateDeliverySchedule() {
   }
 }
 
-function createScheduleRow(
+const createScheduleRow = (
   id,
   date,
   clientId,
@@ -133,8 +141,9 @@ function createScheduleRow(
   pickupTime,
   deliveryNotes,
   pickupNotes,
-  equipmentData
-) {
+  equipmentData,
+  deliveryEquipmentData
+) => {
   // スケジュール行の作成
   return [
     id,                    // 配送予約ID
@@ -156,12 +165,11 @@ function createScheduleRow(
     '',                    // →
     ...equipmentData,      // 備品情報
     '',                    // →
-    // 残りの列を空白で埋める
-    ...Array(20).fill('')  // 追加の列用の空白
+    ...deliveryEquipmentData,
   ];
 }
 
-function generateMonthlySchedule(
+const generateMonthlySchedule = (
   firstDeliveryDate,
   deliveryDay,
   clientId,
@@ -174,9 +182,10 @@ function generateMonthlySchedule(
   deliveryNotes,
   pickupNotes,
   equipmentData,
+  deliveryEquipmentData,
   startId,
   existingDeliveries
-) {
+) => {
   const schedules = [];
   const startDate = new Date(firstDeliveryDate);
   const endDate = new Date(startDate);
@@ -208,7 +217,8 @@ function generateMonthlySchedule(
           pickupTime,
           deliveryNotes,
           pickupNotes,
-          equipmentData
+          equipmentData,
+          deliveryEquipmentData
         ));
         idCounter++;
       }
@@ -219,7 +229,7 @@ function generateMonthlySchedule(
   return schedules;
 }
 
-function formatDate(date) {
+const formatDate = (date)  => {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
