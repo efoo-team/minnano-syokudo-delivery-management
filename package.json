@@ -1,0 +1,22 @@
+{
+    "private": true,
+    "scripts": {
+        "tsc": "tsc --noEmit",
+        "lint": "npm-run-all lint:prettier lint:secret",
+        "lint:prettier": "prettier --check './src/**/*.ts'",
+        "lint:secret": "npx secretlint --secretlintignore .gitignore \"**/*\"",
+        "lint:fix": "npm-run-all lint:fix:prettier",
+        "lint:fix:prettier": "prettier --write './src/**/*.ts'",
+        "push": "clasp push"
+    },
+    "dependencies": {
+        "@google/clasp": "^2.4.2"
+    },
+    "devDependencies": {
+        "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
+        "@types/google-apps-script": "^1.0.83",
+        "npm-run-all": "^4.1.5",
+        "prettier": "^3.3.1",
+        "secretlint": "^8.2.4"
+    }
+}
